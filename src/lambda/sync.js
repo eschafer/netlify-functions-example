@@ -1,12 +1,11 @@
-import "file-loader?name=normalize.css!../node_modules/normalize.css/normalize.css";
-import "file-loader?name=styles.css!./styles.css";
-
+const fetch = require('node-fetch').default;
 const AIRTABLE_BASE_ID = "appLrEs4dudqnhXk9";
 const MY_NAME = "Elizabeth Schafer";
+const { API_URL } = process.env;
 
 const getGithubNotifications = async () => {
   try {
-    const response = await fetch("/.netlify/functions/github_get_notifications");
+    const response = await fetch(`${API_URL}/.netlify/functions/github_get_notifications`);
     const data = await response.json();
     return data.notifications;
   } catch (error) {
@@ -15,14 +14,14 @@ const getGithubNotifications = async () => {
 };
 
 const getJiraIssues = async () => {
-  const response = await fetch("/.netlify/functions/jira_get_issues");
+  const response = await fetch(`${API_URL}/.netlify/functions/jira_get_issues`);
   const data = await response.json();
   return data.issues;
 };
 
 const getAirtableRecord = async body => {
   try {
-    const response = await fetch("/.netlify/functions/airtable_get_record", {
+    const response = await fetch(`${API_URL}/.netlify/functions/airtable_get_record`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -39,7 +38,7 @@ const getAirtableRecord = async body => {
 const createAirtableRecord = async body => {
   console.log('createAirtableRecord', body);
   try {
-    const response = await fetch("/.netlify/functions/airtable_create_record", {
+    const response = await fetch(`${API_URL}/.netlify/functions/airtable_create_record`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -54,7 +53,7 @@ const createAirtableRecord = async body => {
 const updateAirtableRecord = async body => {
   console.log('updateAirtableRecord', body);
   try {
-    const response = await fetch("/.netlify/functions/airtable_update_record", {
+    const response = await fetch(`${API_URL}/.netlify/functions/airtable_update_record`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -72,7 +71,7 @@ async function asyncForEach(array, callback) {
   }
 }
 
-const handleGithubToAirtableButtonClick = async () => {
+const githubToAirtable = async () => {
   console.log('requesting data...');
   const notifications = await getGithubNotifications();
 
@@ -120,7 +119,7 @@ const handleGithubToAirtableButtonClick = async () => {
   console.log('done!');
 };
 
-const handleJiraToAirtableButtonClick = async () => {
+const jiraToAirtable = async () => {
   console.log('requesting data...');
   const issues = await getJiraIssues();
   
@@ -165,17 +164,13 @@ const handleJiraToAirtableButtonClick = async () => {
   console.log('done!');
 };
 
-const handleSyncButtonClick = async () => {
-  fetch("/.netlify/functions/sync");
-}
 
-const githubToAirtableButton = document.querySelector("#github-to-airtable");
-const jiraToAirtableButton = document.querySelector("#jira-to-airtable");
-const syncButton = document.querySelector("#sync");
+exports.handler = async (event, context) => {
+  await githubToAirtable();
+  // await jiraToAirtable();
 
-githubToAirtableButton.addEventListener(
-  "click",
-  handleGithubToAirtableButtonClick
-);
-jiraToAirtableButton.addEventListener("click", handleJiraToAirtableButtonClick);
-syncButton.addEventListener("click", handleSyncButtonClick);
+  return {
+    statusCode: 200,
+    body: "Hello, World"
+  };
+};
