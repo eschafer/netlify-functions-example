@@ -121,23 +121,43 @@ const handleGithubToAirtableButtonClick = async () => {
 
 const handleJiraToAirtableButtonClick = async () => {
   const issues = await getJiraIssues();
-  issues.issues.forEach(issue => {
-    createAirtableRecord({
+  
+  asyncForEach(issues.issues, async (issue) => {
+    const airtableRecord = await getAirtableRecord({
       baseId: AIRTABLE_BASE_ID,
       tableId: "Watched Issues",
-      record: {
-        assignee: issue.fields.assignee && issue.fields.assignee.displayName,
-        id: issue.id,
-        key: issue.key,
-        project: issue.key.match(/(\w+)-/)[1],
-        reporter: issue.fields.reporter && issue.fields.reporter.displayName,
-        source: "Jira",
-        status: issue.fields.status.name,
-        title: issue.fields.summary,
-        type: issue.fields.issuetype.name,
-        updatedDateTime: issue.fields.updated
-      }
+      formula: `id = ${issue.id}`
     });
+
+    const recordData = {
+      assignee: issue.fields.assignee && issue.fields.assignee.displayName,
+      id: issue.id,
+      key: issue.key,
+      project: issue.key.match(/(\w+)-/)[1],
+      reporter: issue.fields.reporter && issue.fields.reporter.displayName,
+      source: "Jira",
+      status: issue.fields.status.name,
+      title: issue.fields.summary,
+      type: issue.fields.issuetype.name,
+      updatedDateTime: issue.fields.updated
+    };
+
+    console.log(recordData);
+
+    if (airtableRecord) {
+      updateAirtableRecord({
+        baseId: AIRTABLE_BASE_ID,
+        tableId: "Watched Issues",
+        recordId: airtableRecord.id,
+        record: recordData,
+      });
+    } else {
+      createAirtableRecord({
+        baseId: AIRTABLE_BASE_ID,
+        tableId: "Watched Issues",
+        record: recordData,
+      });
+    }
   });
 };
 
