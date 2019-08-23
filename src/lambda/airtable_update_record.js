@@ -4,13 +4,13 @@ const AIRTABLE_API_ENDPOINT = "https://api.airtable.com";
 
 exports.handler = async (event, context) => {
   const body = JSON.parse(event.body);
-  const { baseId, record, tableId } = body;
+  const { baseId, record, recordId, tableId } = body;
 
-  if (!baseId || !record || !tableId) {
+  if (!baseId || !record || !recordId || !tableId) {
     return {
       statusCode: 422,
       body: JSON.stringify({
-        error: "baseId, record, and tableId are required"
+        error: "baseId, record, recordId, and tableId are required"
       })
     };
   }
@@ -23,7 +23,7 @@ exports.handler = async (event, context) => {
     const base = await Airtable.base(baseId);
     const table = await base(tableId);
 
-    const response = await table.create(record, { typecast: true });
+    const response = await table.update(recordId, record, { typecast: true });
 
     return {
       statusCode: 200,
