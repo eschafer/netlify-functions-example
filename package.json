@@ -16,7 +16,7 @@
   "author": "imorente",
   "license": "MIT",
   "devDependencies": {
-    "airtable": "^0.7.1",
+    "airtable": "^0.7.2",
     "babel-loader": "^7.1.4",
     "concurrently": "^3.5.1",
     "dotenv": "^5.0.1",
